@@ -312,6 +312,60 @@ h1 {
   min-height: 18px;
   letter-spacing: .02em;
 }
+
+.pod-counter {
+  margin-top: 36px;
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--rim);
+  border-radius: 16px;
+  padding: 20px 24px;
+}
+.counter-title {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  margin-bottom: 14px;
+}
+.counter-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.counter-row:last-child { margin-bottom: 0 }
+.counter-pod {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.counter-bar-wrap {
+  width: 100px;
+  height: 6px;
+  background: var(--rim);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.counter-bar {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 3px;
+  transition: width .4s ease;
+}
+.counter-num {
+  font-size: 12px;
+  color: var(--gold);
+  font-family: 'Courier New', monospace;
+  min-width: 20px;
+  text-align: right;
+}
 </style>
 </head>
 <body>
@@ -375,6 +429,11 @@ h1 {
   </div>
 
   <p class="error-msg" id="errorMsg"></p>
+
+  <div class="pod-counter" id="podCounter" style="display:none">
+    <div class="counter-title">סטטיסטיקת אפייה</div>
+    <div class="counter-list" id="counterList"></div>
+  </div>
 </div>
 
 <script>
@@ -429,6 +488,26 @@ function burst(btn) {
 
 const btn = document.getElementById('cookieBtn');
 const card = document.getElementById('card');
+const podCounts = {};
+
+function updateCounter(pod) {
+  podCounts[pod] = (podCounts[pod] || 0) + 1;
+  const total = Object.values(podCounts).reduce((a, b) => a + b, 0);
+  const list = document.getElementById('counterList');
+  list.innerHTML = '';
+  Object.entries(podCounts)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([name, count]) => {
+      const pct = Math.round((count / total) * 100);
+      list.innerHTML += `
+        <div class="counter-row">
+          <span class="counter-pod">${name}</span>
+          <div class="counter-bar-wrap"><div class="counter-bar" style="width:${pct}%"></div></div>
+          <span class="counter-num">${count}</span>
+        </div>`;
+    });
+  document.getElementById('podCounter').style.display = 'block';
+}
 
 async function getFortune() {
   document.getElementById('errorMsg').textContent = '';
@@ -441,10 +520,11 @@ async function getFortune() {
     if (!res.ok) throw new Error();
     const data = await res.json();
 
-    document.getElementById('fortuneText').textContent = '“' + data.fortune + '”';
+    document.getElementById('fortuneText').textContent = '”' + data.fortune + '”';
     document.getElementById('podName').textContent = data.pod;
     document.getElementById('versionName').textContent = data.version;
     card.classList.add('visible');
+    updateCounter(data.pod);
   } catch {
     document.getElementById('errorMsg').textContent = 'לא ניתן להגיע ל-API — בדוק שה-port-forward פועל';
   }
