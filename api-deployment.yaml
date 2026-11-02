@@ -21,3 +21,10 @@ spec:
           env:
             - name: APP_VERSION
               value: "v1"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "50Mi"
+            limits:
+              cpu: "100m"
+              memory: "100Mi"
