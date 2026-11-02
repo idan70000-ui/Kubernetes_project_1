@@ -103,3 +103,4 @@ kubectl rollout undo deployment/fortune-api
 
 בונוסים:
 1) בוצע (בדפדפן אפשר לראות)
+2) בוצע (אפשר לראות בקבצי יאמל הרלוונטים)
